@@ -27,6 +27,8 @@ def main():
     print( 'hello' )
     files = os.listdir( '.' )
     for f in files:
+        if 'sims3pack' not in f:
+            continue
         data = open_sims3pack( f )
         peek_header( data )
         xml = extract_xml( data )
