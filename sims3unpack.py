@@ -7,7 +7,7 @@ def open_sims3pack( fname ):
     with open( fname, 'rb' ) as f:
         data = f.read()
     return data
-    
+
 def peek_header( data ):
     xml_key = '<?xml'
     dbpf_key = 'DBPF'
@@ -23,20 +23,37 @@ def extract_dbpf( data ):
     dbpf_start = data.find( 'DBPF' )
     return( data[ dbpf_start: ] )
 
-def main():
-    print( 'hello' )
-    files = os.listdir( '.' )
+def main( args ):
+    foreach_sims3pack( args )
+
+def foreach_sims3pack( args ):
+    if os.path.isdir( args.path ):
+        files = os.listdir( args.path )
+    else:
+        files = [ args.path ]
+
     for f in files:
         if 'sims3pack' not in f:
             continue
+        if args.verbose: print( 'Processing {0}'.format( f ) )
         data = open_sims3pack( f )
-        peek_header( data )
+        if args.debug: peek_header( data )
         xml = extract_xml( data )
         dbpf = extract_dbpf( data )
         package_name = f.replace( 'sims3pack', 'package' )
-        print( 'Writing {inf} as {outf}'.format( inf = f, outf = package_name ) )
-        with open( package_name, 'wb' ) as out:
+        out_path = os.path.join( args.out, package_name )
+        print( 'Writing {inf} as {outf}'.format( inf = f, outf = out_path ) )
+        with open( out_path, 'wb' ) as out:
              out.write( dbpf )
 
+
 if __name__ == '__main__':
-    main()
+    import argparse
+    parser = argparse.ArgumentParser( description='sims3pack to package tool' )
+    parser.add_argument( 'path', help = 'sims3pack file or path to dir with simspack files' )
+    parser.add_argument( '-o', '--out', help = 'path to Mods folder', default = '.' )
+    parser.add_argument( '-v', '--verbose', action="store_true", help="Increase the verbosity." )
+    parser.add_argument( '-g', '--debug',   action="store_true", help="Debug output." )
+
+    args = parser.parse_args()
+    main( args )
